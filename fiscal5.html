@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fiscal 5 — Automação Fiscal Inteligente</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a1628;
+    --navy-mid: #0f2040;
+    --navy-light: #1a3460;
+    --blue: #1e4fa8;
+    --cyan: #00c8a0;
+    --cyan-dim: #00a884;
+    --cyan-glow: rgba(0,200,160,0.15);
+    --white: #f5f8ff;
+    --gray-100: #e8edf5;
+    --gray-200: #c8d0e0;
+    --gray-400: #7a8aaa;
+    --gray-600: #3d4e6a;
+    --text: #dce4f5;
+    --text-dim: #8a9abf;
+    --card-bg: rgba(20, 40, 80, 0.5);
+    --border: rgba(100,140,200,0.12);
+    --font-head: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--navy);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ─── BACKGROUND MESH ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(30,79,168,0.25) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(0,200,160,0.10) 0%, transparent 55%),
+      radial-gradient(ellipse 100% 60% at 50% 50%, rgba(10,22,40,0) 0%, var(--navy) 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* grid lines */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(100,140,220,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(100,140,220,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
+
+  /* ─── HEADER ─── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,22,40,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 32px;
+    max-width: 1160px;
+    margin: 0 auto;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+
+  .logo-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 0 20px rgba(0,200,160,0.3);
+  }
+
+  .logo-text {
+    font-family: var(--font-head);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.5px;
+  }
+
+  .logo-text span { color: var(--cyan); }
+
+  nav { display: flex; gap: 8px; }
+
+  nav a {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+
+  nav a:hover { color: var(--white); background: rgba(100,140,220,0.1); }
+
+  nav a.nav-gh {
+    border: 1px solid var(--border);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  nav a.nav-gh:hover { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-glow); }
+
+  /* ─── HERO ─── */
+  .hero {
+    padding: 120px 0 100px;
+    text-align: center;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,200,160,0.08);
+    border: 1px solid rgba(0,200,160,0.25);
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--cyan);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--cyan);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--cyan);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .hero h1 {
+    font-family: var(--font-head);
+    font-size: clamp(36px, 5.5vw, 66px);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -2px;
+    color: var(--white);
+    max-width: 860px;
+    margin: 0 auto 24px;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    background: linear-gradient(90deg, var(--cyan), #4be0cb);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--text-dim);
+    max-width: 620px;
+    margin: 0 auto 48px;
+    line-height: 1.7;
+  }
+
+  .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.25s;
+    border: none;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--cyan), var(--cyan-dim));
+    color: var(--navy);
+    font-weight: 600;
+    box-shadow: 0 4px 24px rgba(0,200,160,0.35);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,200,160,0.45);
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .btn-outline:hover {
+    border-color: rgba(100,140,220,0.4);
+    background: rgba(100,140,220,0.07);
+  }
+
+  /* stats strip */
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    margin-top: 80px;
+    padding-top: 48px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .stat { text-align: center; }
+
+  .stat-num {
+    font-family: var(--font-head);
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -1px;
+  }
+
+  .stat-num span { color: var(--cyan); }
+
+  .stat-label {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* ─── SECTION HEADER ─── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: var(--font-head);
+    font-size: clamp(26px, 3.5vw, 40px);
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -1px;
+    line-height: 1.15;
+  }
+
+  .section-title em {
+    font-style: normal;
+    color: var(--cyan);
+  }
+
+  /* ─── INSTALL SECTION ─── */
+  .install-section { padding: 100px 0; }
+
+  .install-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 56px;
+    align-items: start;
+  }
+
+  @media(max-width: 768px) { .install-grid { grid-template-columns: 1fr; } }
+
+  /* video player */
+  .video-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+  }
+
+  .video-thumb {
+    position: relative;
+    aspect-ratio: 16/9;
+    background: linear-gradient(135deg, var(--navy-mid), var(--navy-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+  }
+
+  .video-thumb::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 30% 40%, rgba(30,79,168,0.4) 0%, transparent 60%),
+      radial-gradient(circle at 70% 70%, rgba(0,200,160,0.2) 0%, transparent 50%);
+  }
+
+  .video-thumb-content {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .video-thumb-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+
+  .video-thumb-title {
+    font-family: var(--font-head);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--white);
+  }
+
+  .play-btn {
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    background: rgba(0,200,160,0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 0 40px rgba(0,200,160,0.5);
+    bottom: 20px;
+    right: 20px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .play-btn:hover { transform: scale(1.1); background: var(--cyan); }
+
+  .video-footer {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-top: 1px solid var(--border);
+  }
+
+  .video-footer-text { font-size: 14px; color: var(--text-dim); }
+
+  /* downloads panel */
+  .downloads-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    backdrop-filter: blur(10px);
+  }
+
+  .downloads-card h3 {
+    font-family: var(--font-head);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .downloads-card p {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-bottom: 28px;
+  }
+
+  .dl-buttons { display: flex; flex-direction: column; gap: 12px; }
+
+  .btn-dl {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.25s;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    border: none;
+    font-family: var(--font-body);
+  }
+
+  .btn-dl-primary {
+    background: linear-gradient(135deg, var(--cyan), var(--cyan-dim));
+    color: var(--navy);
+    font-weight: 600;
+    box-shadow: 0 4px 20px rgba(0,200,160,0.3);
+  }
+
+  .btn-dl-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,200,160,0.4); }
+
+  .btn-dl-secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .btn-dl-secondary:hover { border-color: rgba(100,140,220,0.35); background: rgba(100,140,220,0.06); }
+
+  .btn-dl-icon {
+    width: 36px;
+    height: 36px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .btn-dl-primary .btn-dl-icon { background: rgba(10,22,40,0.2); }
+
+  .btn-dl-info { flex: 1; }
+  .btn-dl-info strong { display: block; font-size: 14px; }
+  .btn-dl-info small { font-size: 12px; opacity: 0.7; }
+
+  /* install code */
+  .install-code {
+    margin-top: 24px;
+    background: rgba(5,12,28,0.6);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+  }
+
+  .install-code-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .install-code code {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: var(--cyan);
+    word-break: break-all;
+  }
+
+  /* ─── FEATURES ─── */
+  .features-section { padding: 100px 0; }
+
+  .features-header { margin-bottom: 56px; }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .feature-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--cyan), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .feature-card:hover {
+    border-color: rgba(0,200,160,0.2);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  }
+
+  .feature-card:hover::before { opacity: 1; }
+
+  .feature-icon {
+    font-size: 28px;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .feature-num {
+    font-family: var(--font-head);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .feature-title {
+    font-family: var(--font-head);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+
+  .feature-desc {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.65;
+  }
+
+  .feature-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 16px;
+  }
+
+  .tag {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    background: rgba(100,140,220,0.1);
+    border: 1px solid rgba(100,140,220,0.15);
+    color: var(--text-dim);
+  }
+
+  /* ─── TIP BOX ─── */
+  .tip-section { padding: 60px 0 100px; }
+
+  .tip-box {
+    background: linear-gradient(135deg, rgba(0,200,160,0.07), rgba(30,79,168,0.12));
+    border: 1px solid rgba(0,200,160,0.2);
+    border-radius: 20px;
+    padding: 48px;
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+  }
+
+  .tip-icon-wrap {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, rgba(0,200,160,0.2), rgba(0,200,160,0.05));
+    border: 1px solid rgba(0,200,160,0.3);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .tip-content h3 {
+    font-family: var(--font-head);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 14px;
+  }
+
+  .tip-content p {
+    font-size: 15px;
+    color: var(--text-dim);
+    line-height: 1.7;
+    max-width: 780px;
+  }
+
+  .tip-flow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 20px;
+    align-items: center;
+  }
+
+  .flow-step {
+    background: rgba(100,140,220,0.1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .flow-arrow { color: var(--cyan); font-size: 16px; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 0;
+  }
+
+  .footer-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  .footer-copy {
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 24px;
+  }
+
+  .footer-links a {
+    font-size: 14px;
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--cyan); }
+
+  /* animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero > * {
+    animation: fadeUp 0.7s both;
+  }
+
+  .hero > *:nth-child(1) { animation-delay: 0.05s; }
+  .hero > *:nth-child(2) { animation-delay: 0.15s; }
+  .hero > *:nth-child(3) { animation-delay: 0.25s; }
+  .hero > *:nth-child(4) { animation-delay: 0.35s; }
+  .hero > *:nth-child(5) { animation-delay: 0.45s; }
+</style>
+</head>
+<body>
+
+<!-- ─── HEADER ─── -->
+<header>
+  <div class="header-inner">
+    <a href="#" class="logo">
+      <div class="logo-icon">🔍</div>
+      <span class="logo-text">Fiscal<span>5</span></span>
+    </a>
+    <nav>
+      <a href="#features">Recursos</a>
+      <a href="#install">Instalação</a>
+      <a href="#tip">Suporte</a>
+      <a href="#" class="nav-gh">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub Repo
+      </a>
+    </nav>
+  </div>
+</header>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-badge">Portal Nacional NFS-e • Chrome Extension</div>
+    <h1>Automação Fiscal <em>Inteligente</em> para Contadores</h1>
+    <p class="hero-sub">Sua rotina mais rápida, precisa e integrada com o Portal Nacional NFS-e e ferramentas de análise avançadas.</p>
+    <div class="hero-actions">
+      <a href="#features" class="btn btn-primary">
+        ✦ Ver Funcionalidades
+      </a>
+      <a href="#install" class="btn btn-outline">
+        📥 Instalação Rápida
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-num">7<span>+</span></div>
+        <div class="stat-label">Módulos Integrados</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">80<span>+</span></div>
+        <div class="stat-label">Campos XML Exportáveis</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">100<span>%</span></div>
+        <div class="stat-label">Automação no Portal NFS-e</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">0<span>s</span></div>
+        <div class="stat-label">Instalação Offline Possível</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── INSTALL ─── -->
+<section class="install-section" id="install">
+  <div class="wrap">
+    <div class="section-label">Primeiros Passos</div>
+    <h2 class="section-title">Instalação Rápida e <em>Documentação</em></h2>
+
+    <div class="install-grid">
+      <!-- Video -->
+      <div class="video-card">
+        <div class="video-thumb">
+          <div class="video-thumb-content">
+            <div class="video-thumb-icon">🔍</div>
+            <div class="video-thumb-title">Tutorial de Instalação — Fiscal 5</div>
+          </div>
+          <div class="play-btn">▶</div>
+        </div>
+        <div class="video-footer">
+          <span style="font-size:20px">🎬</span>
+          <div>
+            <div class="video-footer-text" style="font-weight:500;color:var(--text)">Tutorial de Instalação Completo</div>
+            <div class="video-footer-text">Passo a passo em vídeo • ~8 min</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Downloads -->
+      <div class="downloads-card">
+        <h3>📄 Guia de Uso Completo</h3>
+        <p>Documentação detalhada com todos os módulos, configurações e exemplos práticos de uso.</p>
+        <div class="dl-buttons">
+          <a href="#" class="btn-dl btn-dl-primary">
+            <div class="btn-dl-icon">⬇</div>
+            <div class="btn-dl-info">
+              <strong>Baixar Guia Completo (.pdf)</strong>
+              <small>Documentação oficial • Versão 5.0</small>
+            </div>
+          </a>
+          <a href="#" class="btn-dl btn-dl-secondary">
+            <div class="btn-dl-icon">↗</div>
+            <div class="btn-dl-info">
+              <strong>Abrir Guia em Nova Aba</strong>
+              <small>Visualizar online sem download</small>
+            </div>
+          </a>
+        </div>
+        <div class="install-code">
+          <div class="install-code-label">🔗 Instalação via Chrome Webstore</div>
+          <code>chrome://extensions → Modo Desenvolvedor → Carregar sem compactação</code>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FEATURES ─── -->
+<section class="features-section" id="features">
+  <div class="wrap">
+    <div class="features-header">
+      <div class="section-label">Módulos da Extensão</div>
+      <h2 class="section-title">Conheça os Módulos <em>do Fiscal 5</em></h2>
+    </div>
+
+    <div class="features-grid">
+
+      <div class="feature-card">
+        <span class="feature-icon">🗂️</span>
+        <div class="feature-num">Módulo 1</div>
+        <div class="feature-title">Painel Lateral (Sidepanel)</div>
+        <div class="feature-desc">Hub central da extensão com acesso direto a todas as funcionalidades. Consulta fiscal por CNPJ, verificação do Simples Nacional e cálculo de impostos.</div>
+        <div class="feature-tags">
+          <span class="tag">CNPJ</span>
+          <span class="tag">PIS/COFINS</span>
+          <span class="tag">Help IA</span>
+          <span class="tag">Downloads</span>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">📥</span>
+        <div class="feature-num">Módulo 2</div>
+        <div class="feature-title">Download NFSe Nacional</div>
+        <div class="feature-desc">Automação completa no portal nfse.gov.br. Filtre por período, competência e formato, e baixe lotes de notas sem esforço manual.</div>
+        <div class="feature-tags">
+          <span class="tag">nfse.gov.br</span>
+          <span class="tag">XML</span>
+          <span class="tag">PDF</span>
+          <span class="tag">Automação</span>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">📊</span>
+        <div class="feature-num">Módulo 3</div>
+        <div class="feature-title">Relatório HTML Interativo</div>
+        <div class="feature-desc">Relatório dinâmico gerado a partir de XMLs com filtros avançados, totalizadores automáticos e toggle entre Prestador e Tomador.</div>
+        <div class="feature-tags">
+          <span class="tag">Filtros Dinâmicos</span>
+          <span class="tag">Totalizadores</span>
+          <span class="tag">Prestador/Tomador</span>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">📋</span>
+        <div class="feature-num">Módulo 4</div>
+        <div class="feature-title">Excel Padrão</div>
+        <div class="feature-desc">Exportação rápida para .xlsx com abas organizadas, dados numéricos formatados e estrutura pronta para análise imediata no Excel.</div>
+        <div class="feature-tags">
+          <span class="tag">.xlsx</span>
+          <span class="tag">Abas Organizadas</span>
+          <span class="tag">Dados Numéricos</span>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">⚙️</span>
+        <div class="feature-num">Módulo 5</div>
+        <div class="feature-title">Excel Personalizado</div>
+        <div class="feature-desc">Configure exatamente quais campos do XML extrair. Com mais de 80 opções disponíveis, o relatório se adapta perfeitamente ao seu fluxo de trabalho.</div>
+        <div class="feature-tags">
+          <span class="tag">80+ Campos</span>
+          <span class="tag">Configurável</span>
+          <span class="tag">XML Parsing</span>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">🖱️</span>
+        <div class="feature-num">Módulo 6</div>
+        <div class="feature-title">Menu de Contexto</div>
+        <div class="feature-desc">Selecione qualquer CNPJ em qualquer página e clique com o botão direito para acessar consultas fiscais instantâneas sem sair do contexto.</div>
+        <div class="feature-tags">
+          <span class="tag">Botão Direito</span>
+          <span class="tag">Qualquer Página</span>
+          <span class="tag">Consulta Rápida</span>
+        </div>
+      </div>
+
+      <div class="feature-card" style="grid-column: 1 / -1; max-width: 460px;">
+        <span class="feature-icon">🔒</span>
+        <div class="feature-num">Módulo 7</div>
+        <div class="feature-title">Licença e Ativação</div>
+        <div class="feature-desc">Verificação de licença em segundo plano com cache offline inteligente. Formulário de ativação simples e funcionamento contínuo mesmo sem conexão.</div>
+        <div class="feature-tags">
+          <span class="tag">Cache Offline</span>
+          <span class="tag">Background Check</span>
+          <span class="tag">Ativação Simples</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── TIP ─── -->
+<section class="tip-section" id="tip">
+  <div class="wrap">
+    <div class="tip-box">
+      <div class="tip-icon-wrap">💬</div>
+      <div class="tip-content">
+        <h3>Dica Rápida de Uso</h3>
+        <p>Siga este fluxo para obter seus relatórios com máxima eficiência e sem retrabalho.</p>
+        <div class="tip-flow">
+          <span class="flow-step">Abra a extensão</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">Vá em Consulta</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">Down NFSe</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">Selecione Período + Emitidas</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">Baixe os arquivos</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">Arraste para o Relatório</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">Gere o Excel ✓</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-copy">© 2023 Fiscal 5 Project — Todos os direitos reservados.</div>
+    <div class="footer-links">
+      <a href="#">Suporte</a>
+      <a href="#">Política de Privacidade</a>
+      <a href="#">GitHub</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
